@@ -1,0 +1,32 @@
+language: scala
+
+scala:
+  - 2.12.4
+  - 2.11.11
+
+jdk:
+  - openjdk8
+
+cache:
+  directories:
+    - "$HOME/.m2/repository"
+    - "$HOME/.sbt"
+    - "$HOME/.ivy2"
+
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport && sbt coverageAggregate
+
+after_success:
+  - sbt coveralls
+
+deploy:
+  provider: script
+  script: sbt ++$TRAVIS_SCALA_VERSION publish
+  skip_cleanup: true
+  on:
+    tags: true
+
+env:
+  global:
+  - secure: pSWQie1Z8XYwH/Pq7ZIX9t3dp1HXklY50StV0tuuvt/74Epy3lXH+W9EXj7DKF7omFY4jWLOFo4vu6i627aDHfghZt/cCKMUp78enNLapTak1BKDW/BzBXiI6JQpZ5vFktZwCpNRHItKLvr3dOwJ/mvmkaiF9P9UkwWRTzp5OPu5MZwmJhF+IIPc6PYvBi7PQ65yRAAFOqjU40NzNcBYlXyYtG3uJrTwafgQN55QIvhdVg9ugNGhWIHi/Y461ppVLeYWw4g9S+1cuYsPe3ivoXpiWNM4BibnobL8nk8r2v6OGhLZrTqZKV2jlt690ynNbHI2atLb0m9kXsYPybVDuUaoT/qcAwHw2gdBW44bjJEh6p5G7+qheW9hBsqdRwtC73XBiajc4CGZvNblz9XPxV2LDf0/Gu6bLbRakm8h7DBhkC8242bXD1my7DiI0jFho9HCznafSIwMtp7VmawIOO6ch6dh3tsSmzd3Vn392ov6UQ68yivFAh2zcdzHTYmTZ3lTsWMrq0UCq0qOwEjb5eU1NLrpm5E1lNGkKT9TREg3sYaqsp0s7Po7JcS86lBcrq5dRyk34MSTogrOv3/l2irHNdXhGrz501WD8cGCedF+7oMLJOeAJZu8farwx7+aaI0fijcBxQhFj22A33YEW6zIYj7gLIhJ2mJ7+BL2qeM=
+  - secure: H6WVZHkCZL4lUeFubCdsBeE488nGXs0CKygYMbk1YDVX/7ZN72xkJGRAvEEVzkrtq3hR9aMprsz4CMEAH5px3OxrT62J6jFDVpa9J+RjLVMSVRyIVdd7Kt3noZCLedGD1GeLaFueufBqQkigEJa3KztEnyD+oOGpVCURFQzAKeB64EKgc/YYCHbcCK9fD1HclP19twYgB1FJv8kRAkTWFyS0lLVyEgak+9ycfXgztyzcicu8dtfl4gsyidiYX4u0IvN9vaeUhsu2KEf0qnqVYi4N54GofBOXx+uXieHyp8pPpthvpHhRBpWncNyXb8Brch9abL4tjAmjRkUGo5wZc4P1iw3evPRdOlA2HcyzTyNLjaejMlNBPYWH01q2g2RRBRV+OukYHlLL6I1IgwisJ428o5z65k0ZHyHnZR88Hben+Aelv40z+ITAxi7xDLVICaRTtM26jaiZbzNl+GpsMm8rl4Ipaj/Ak3uLoA5beNW/QhyGDMbxBYd9+DKpagxepB/C8i7AvBTxTCTG9N2eT49yDIz/nmPAnxa+JCf7b4+byKhUQ9zc36UwOLk5C19XuvWAPu9E6fsHp0/JtHfOBlmS6h4g9U0AgcDpHmesF6TDia5OC0hOX+jXGOl6P6StvV0Rt27ECqxSAqwgAeq0EAuZdIzWur+JnDwGkJMwiTg=
