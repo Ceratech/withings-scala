@@ -1,8 +1,11 @@
 name := "withings-scala"
 
-version := "0.1"
+enablePlugins(GitVersioning)
 
 scalaVersion := "2.12.4"
+
+git.baseVersion := "0.1"
+git.useGitDescribe := true
 
 libraryDependencies ++= Seq(
   // OAuth 1.0 client
