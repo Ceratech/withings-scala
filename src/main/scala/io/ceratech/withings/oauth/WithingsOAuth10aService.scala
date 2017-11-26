@@ -6,7 +6,7 @@ import io.ceratech.withings.{WithingsApi, WithingsException}
 import play.api.libs.json._
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
-
+import scala.collection.JavaConverters._
 /**
   * Custom service to allow creation of a more advanced authorization URL
   *
@@ -19,6 +19,9 @@ class WithingsOAuth10aService(config: OAuthConfig)(implicit executionContext: Ex
 
     // Withings API requires all extra OAuth parameters to be present as well
     addOAuthParams(request, "")
+    request.getOauthParameters.asScala.foreach {
+      case (key, value) ⇒ request.addQuerystringParameter(key, value)
+    }
 
     request.getCompleteUrl
   }
@@ -35,7 +38,7 @@ class WithingsOAuth10aService(config: OAuthConfig)(implicit executionContext: Ex
         case JsError(errors) ⇒
           // Readable error for end-user
           val details = errors.map {
-            case (path, validationErrors) ⇒ s"${path.toString()}:\n\t${validationErrors.map(_.messages.mkString(", ").mkString("\n\t"))}"
+            case (path, validationErrors) ⇒ s"${path.toString()}:\n\t${validationErrors.map(_.messages.mkString(", ")).mkString("\n\t")}"
           }.mkString("\n")
           throw WithingsException(s"Error reading JSON response\n$details")
       }
