@@ -15,20 +15,13 @@ import scala.concurrent.{ExecutionContext, Future, blocking}
   *
   * @author dries
   */
-class WithingsClient(apiKey: String,
-                     apiSecret: String,
-                     callback: String)
+class WithingsClient(service: WithingsOAuth10aService)
                     (implicit executionContext: ExecutionContext)
   extends JsonMapping {
 
-  /** Auth service */
-  private lazy val service: WithingsOAuth10aService = WithingsOAuth10aService(apiKey, apiSecret, callback)
-
   private def fetchRequestToken: Future[OAuth1RequestToken] = {
     Future {
-      blocking {
-        service.getRequestTokenAsync.get()
-      }
+      blocking(service.getRequestToken)
     }
   }
 
@@ -50,9 +43,7 @@ class WithingsClient(apiKey: String,
     */
   def requestAccessToken(token: OAuth1RequestToken, verifier: String): Future[WithingsAccessToken] = {
     Future {
-      blocking {
-        service.getAccessTokenAsync(token, verifier).get()
-      }
+      blocking(service.getAccessToken(token, verifier))
     }.map(t ⇒ WithingsAccessToken(t.getToken, t.getTokenSecret))
   }
 

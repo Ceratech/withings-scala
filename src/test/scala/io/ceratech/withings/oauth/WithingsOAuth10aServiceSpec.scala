@@ -5,9 +5,8 @@ import java.util
 
 import com.github.scribejava.core.httpclient.HttpClient
 import com.github.scribejava.core.model._
-import io.ceratech.withings.WithingsException
-import org.scalatest.{AsyncWordSpec, MustMatchers}
-import org.scalatest.mockito.MockitoSugar
+import io.ceratech.withings.helper.ConfigHelper.constructConfig
+import io.ceratech.withings.{BaseTest, WithingsException}
 import org.mockito.ArgumentMatchers.{any, eq ⇒ asEq}
 import org.mockito.Mockito._
 import play.api.libs.json.{Json, Reads}
@@ -17,10 +16,7 @@ import play.api.libs.json.{Json, Reads}
   *
   * @author dries
   */
-class WithingsOAuth10aServiceSpec
-  extends AsyncWordSpec
-    with MustMatchers
-    with MockitoSugar {
+class WithingsOAuth10aServiceSpec extends BaseTest {
 
   "The WithingOAuth10aService" when {
     "getAuthorizationUrl" should {
@@ -101,23 +97,16 @@ class WithingsOAuth10aServiceSpec
         }
       }
     }
-  }
 
-  private def constructConfig(client: HttpClient): OAuthConfig = {
-    new OAuthConfig(
-      "key",
-      "secret",
-      "callback",
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      client
-    )
+    "the companion object" should {
+      "create a service with defaults" in {
+        val service = WithingsOAuth10aService("key", "secret", "callback")
+        service.getConfig.getHttpClient mustBe null
+      }
+    }
   }
 
   case class TestJson(id: Long)
+
   private implicit val testReads: Reads[TestJson] = Json.reads[TestJson]
 }
