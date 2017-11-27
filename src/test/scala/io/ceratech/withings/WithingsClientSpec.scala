@@ -100,5 +100,12 @@ class WithingsClientSpec extends BaseTest {
         }
       }
     }
+
+    "the companion object" should {
+      "create an initalized client" in {
+        val client = WithingsClient("key", "secret", "callback")
+        client must not be null
+      }
+    }
   }
 }

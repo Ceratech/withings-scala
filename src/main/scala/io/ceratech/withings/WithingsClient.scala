@@ -6,7 +6,6 @@ import com.github.scribejava.core.model.{OAuth1RequestToken, OAuthRequest, Verb}
 import io.ceratech.withings.Implicits._
 import io.ceratech.withings.model.{JsonMapping, MeasurementGroup, MeasurementResponse, WithingsResponse}
 import io.ceratech.withings.oauth.WithingsOAuth10aService
-import play.api.libs.json.{JsError, JsSuccess, Json, JsonNaming}
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 
@@ -90,5 +89,21 @@ class WithingsClient(service: WithingsOAuth10aService)
     service.executeAsJson[WithingsResponse[MeasurementResponse]](request).map {
       _.body.map(_.measuregrps).getOrElse(Nil)
     }
+  }
+}
+
+object WithingsClient {
+
+  /**
+    * Construct a default Withings client
+    *
+    * @param apiKey           the API key to use
+    * @param apiSecret        the API secret to use
+    * @param callback         the callback URL to call when the authorization step succeeds
+    * @param executionContext the context to run async tasks on
+    * @return a [[WithingsClient]]
+    */
+  def apply(apiKey: String, apiSecret: String, callback: String)(implicit executionContext: ExecutionContext): WithingsClient = {
+    new WithingsClient(WithingsOAuth10aService(apiKey, apiSecret, callback))
   }
 }
