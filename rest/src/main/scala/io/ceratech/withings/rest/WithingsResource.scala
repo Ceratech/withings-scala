@@ -19,30 +19,22 @@ import scala.concurrent.ExecutionContext
   *
   * @author dries
   */
-@Api(value = "/withings", produces = "application/json")
-@Path("/withings")
+@Api(value = "/", produces = "application/json")
+@Path("/")
 class WithingsResource(client: WithingsClient)(implicit executionContext: ExecutionContext)
   extends RestJsonMapping
     with PlayJsonSupport {
 
-  @Path("/withings")
-  lazy val routes: Route =
-    path("withings") {
-      auth ~ calls
-    }
+  lazy val routes: Route = auth ~ calls
 
-  @Path("auth")
   private lazy val auth: Route =
     path("auth") {
       authorizationUrl ~ requestAccessToken
     }
 
-  @Path("authorizationUrl")
+  @Path("auth/authorizationUrl")
   @ApiOperation(value = "Get Withings authorization URL", nickname = "authorizationUrl", httpMethod = "GET", response = classOf[AutorizationRequestResult])
-  @ApiResponses(Array(
-    new ApiResponse(code = 500, message = "Internal server error")
-  ))
-  private def authorizationUrl: Route = {
+  def authorizationUrl: Route = {
     path("authorizationUrl") {
       get {
         val future = client.fetchAuthorizationUrl.map {
@@ -56,15 +48,13 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
     }
   }
 
+  @Path("auth/requestAccessToken")
   @ApiOperation(value = "Request a Withings access token", nickname = "requestAccessToken", httpMethod = "POST", response = classOf[WithingsAccessToken])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "body", value = "parameters required for the access token call", required = true,
       dataTypeClass = classOf[AccessTokenRequest], paramType = "body")
   ))
-  @ApiResponses(Array(
-    new ApiResponse(code = 500, message = "Internal server error")
-  ))
-  private def requestAccessToken: Route = {
+  def requestAccessToken: Route = {
     path("requestAccessToken") {
       post {
         entity(as[AccessTokenRequest]) { request ⇒
@@ -82,15 +72,13 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
       registerNotification ~ measurements
     }
 
+  @Path("calls/registerNotification")
   @ApiOperation(value = "Register a notification when a certain event hapens on the Withings API", nickname = "registerNotification", httpMethod = "POST")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "body", value = "parameters required for the notification call", required = true,
       dataTypeClass = classOf[RegisterNotificationParameters], paramType = "body")
   ))
-  @ApiResponses(Array(
-    new ApiResponse(code = 500, message = "Internal server error")
-  ))
-  private def registerNotification: Route = {
+  def registerNotification: Route = {
     path("registerNotification") {
       post {
         entity(as[WithingsClientRequest[RegisterNotificationParameters]]) { body ⇒
@@ -105,15 +93,13 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
     }
   }
 
-  @ApiOperation(value = "Get users measurements in a certain timeframe", nickname = "measurements", httpMethod = "POST", response = classOf[Seq[MeasurementGroup]])
+  @Path("calls/measurements")
+  @ApiOperation(value = "Get users measurements in a certain timeframe", nickname = "measurements", httpMethod = "POST", response = classOf[MeasurementGroup], responseContainer = "list")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "body", value = "parameters required for the measurements call", required = true,
       dataTypeClass = classOf[MeasurementsParameters], paramType = "body")
   ))
-  @ApiResponses(Array(
-    new ApiResponse(code = 500, message = "Internal server error")
-  ))
-  private def measurements: Route = {
+  def measurements: Route = {
     path("measurements") {
       post {
         entity(as[WithingsClientRequest[MeasurementsParameters]]) { body ⇒

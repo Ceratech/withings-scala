@@ -31,8 +31,12 @@ lazy val client = (project in file("client"))
 
 lazy val rest = (project in file("rest"))
   .dependsOn(client)
+  .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings,
     name := "withings-rest",
+
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "io.ceratech.withings",
 
     libraryDependencies ++= Seq(
       // Akka HTTP
