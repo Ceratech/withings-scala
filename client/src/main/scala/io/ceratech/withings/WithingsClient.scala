@@ -1,11 +1,11 @@
 package io.ceratech.withings
 
-import java.time.ZonedDateTime
+import java.time.{Instant, ZoneId, ZonedDateTime}
 
 import com.github.scribejava.core.model.{OAuth1RequestToken, OAuthRequest, Verb}
 import com.typesafe.scalalogging.Logger
 import io.ceratech.withings.Implicits._
-import io.ceratech.withings.model.{JsonMapping, MeasurementGroup, MeasurementResponse, WithingsResponse}
+import io.ceratech.withings.model._
 import io.ceratech.withings.oauth.WithingsOAuth10aService
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
@@ -93,9 +93,17 @@ class WithingsClient(service: WithingsOAuth10aService)
     ))
     service.signRequest(accessToken.oauthAccessToken, request)
 
+    // Construct a MeasurementGroup
+    def mapGrpToGroup(grp: MeasurementGrp, zone: ZoneId): MeasurementGroup = {
+      MeasurementGroup(grp.grpid, grp.attrib, ZonedDateTime.ofInstant(Instant.ofEpochSecond(grp.date), zone), grp.category, grp.measures)
+    }
+
     logger.debug(s"Calling measurements with parmeters: userId: $userId, startdate: ${startDate.toEpochSecond}, enddate: ${endDate.toEpochSecond}")
     service.executeAsJson[WithingsResponse[MeasurementResponse]](request).map {
-      _.body.map(_.measuregrps).getOrElse(Nil)
+      _.body.map { res ⇒
+        val zone = ZoneId.of(res.timezone)
+        res.measuregrps.map(mapGrpToGroup(_, zone))
+      }.getOrElse(Nil)
     }
   }
 }

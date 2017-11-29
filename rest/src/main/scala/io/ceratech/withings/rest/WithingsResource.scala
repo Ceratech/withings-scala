@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.github.scribejava.core.model.OAuth1RequestToken
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.ceratech.withings.model.MeasurementGroup
+import io.ceratech.withings.model.MeasurementGrp
 import io.ceratech.withings.rest.model._
 import io.ceratech.withings.{WithingsAccessToken, WithingsClient}
 import io.swagger.annotations._
@@ -94,7 +94,7 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
   }
 
   @Path("calls/measurements")
-  @ApiOperation(value = "Get users measurements in a certain timeframe", nickname = "measurements", httpMethod = "POST", response = classOf[MeasurementGroup], responseContainer = "list")
+  @ApiOperation(value = "Get users measurements in a certain timeframe", nickname = "measurements", httpMethod = "POST", response = classOf[MeasurementGrp], responseContainer = "list")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "body", value = "parameters required for the measurements call", required = true,
       dataTypeClass = classOf[MeasurementsParameters], paramType = "body")

@@ -13,7 +13,7 @@ import io.ceratech.withings.rest.model.RestJsonMapping
 import io.ceratech.withings.{WithingsAccessToken, WithingsClient}
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, MustMatchers, WordSpec}
+import org.scalatest.{MustMatchers, WordSpec}
 
 import scala.concurrent.Future
 
@@ -123,7 +123,7 @@ class WithingsResourceSpec extends WordSpec
 
         val accessToken = WithingsAccessToken("token", "secret")
 
-        val response = MeasurementGroup(1L, 4, ZonedDateTime.now().toEpochSecond, 4, Measurement(20, 30, 40) :: Nil) :: Nil
+        val response = MeasurementGroup(1L, 4, ZonedDateTime.now(), 4, Measurement(20, 30, 40) :: Nil) :: Nil
         when(client.getMeasurements(userId, startDate, endDate)(accessToken)) thenReturn Future.successful(response)
 
         val body =

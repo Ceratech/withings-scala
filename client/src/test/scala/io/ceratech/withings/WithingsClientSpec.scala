@@ -1,12 +1,12 @@
 package io.ceratech.withings
 
-import java.time.ZonedDateTime
+import java.time.{ZoneId, ZonedDateTime}
 import java.util
 
 import com.github.scribejava.core.httpclient.HttpClient
 import com.github.scribejava.core.model.{OAuth1AccessToken, OAuth1RequestToken, OAuthRequest, Response}
 import io.ceratech.withings.helper.ConfigHelper.constructConfig
-import io.ceratech.withings.model.{Measurement, MeasurementGroup, MeasurementResponse, WithingsResponse}
+import io.ceratech.withings.model._
 import io.ceratech.withings.oauth.WithingsOAuth10aService
 import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.any
@@ -86,9 +86,12 @@ class WithingsClientSpec extends BaseTest {
         val (start, stop) = (ZonedDateTime.now(), ZonedDateTime.now())
         val userId = 1L
 
+        val timezone = "Europe/Paris"
+        val date = ZonedDateTime.now(ZoneId.of(timezone)).withNano(0) // Nanos are ignored in parsing JSON so skip it :)
         val measurement = Measurement(20, 10, 5)
-        val group = MeasurementGroup(1L, 2, ZonedDateTime.now().toEpochSecond, 2, measurement :: Nil)
-        val response = MeasurementResponse(group :: Nil)
+        val grp = MeasurementGrp(1L, 2, date.toEpochSecond, 2, measurement :: Nil)
+        val group = MeasurementGroup(1L, 2, date, 2, measurement :: Nil)
+        val response = MeasurementResponse(timezone, grp :: Nil)
 
         when(service.executeAsJson(any[OAuthRequest])(any[Reads[WithingsResponse[MeasurementResponse]]])) thenReturn Future.successful(WithingsResponse(200, Some(response)))
 
