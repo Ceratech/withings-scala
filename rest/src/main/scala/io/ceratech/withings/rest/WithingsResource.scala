@@ -28,7 +28,7 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
   lazy val routes: Route = auth ~ calls
 
   private lazy val auth: Route =
-    path("auth") {
+    pathPrefix("auth") {
       authorizationUrl ~ requestAccessToken
     }
 
@@ -68,7 +68,7 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
   }
 
   private lazy val calls: Route =
-    path("calls") {
+    pathPrefix("calls") {
       registerNotification ~ measurements
     }
 
