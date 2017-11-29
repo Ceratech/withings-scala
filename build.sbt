@@ -2,6 +2,9 @@ import Dependencies._
 
 enablePlugins(GitVersioning)
 
+val akkaVersion = "2.5.7"
+val akkaHttpVersion = "10.0.10"
+
 lazy val commonSettings = Seq(
   organization := "io.ceratech",
   scalaVersion := "2.12.4",
@@ -26,15 +29,26 @@ lazy val client = (project in file("client"))
     ) ++ testStack
   )
 
-lazy val amqp = (project in file("amqp"))
+lazy val rest = (project in file("rest"))
   .dependsOn(client)
   .settings(commonSettings,
-    name := "withings-amqp-rpc",
+    name := "withings-rest",
 
     libraryDependencies ++= Seq(
-      "com.rabbitmq" % "amqp-client" % "5.0.0",
+      // Akka HTTP
+      "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
+      "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+      "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
 
-      "com.typesafe" % "config" % "1.3.2",
-      "com.github.pureconfig" %% "pureconfig" % "0.8.0"
+      // Play JSON support
+      "de.heikoseeberger" %% "akka-http-play-json" % "1.18.0",
+
+      // Swagger
+      "io.swagger" % "swagger-jaxrs" % "1.5.17",
+      "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.11.1",
+
+      "org.slf4j" % "slf4j-simple" % "1.7.25",
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test
     ) ++ testStack
   )

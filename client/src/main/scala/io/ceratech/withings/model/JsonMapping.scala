@@ -1,6 +1,6 @@
 package io.ceratech.withings.model
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Json, OFormat, Reads}
 
 /**
   * JSON mapping for the model classes
@@ -9,8 +9,8 @@ import play.api.libs.json.{Json, Reads}
   */
 trait JsonMapping {
 
-  implicit val measurementReads: Reads[Measurement] = Json.reads[Measurement]
-  implicit val measurementGroupReads: Reads[MeasurementGroup] = Json.reads[MeasurementGroup]
+  implicit val measurementFormat: OFormat[Measurement] = Json.format[Measurement]
+  implicit val measurementGroupFormat: OFormat[MeasurementGroup] = Json.format[MeasurementGroup]
   implicit val measurementResponseReads: Reads[MeasurementResponse] = Json.reads[MeasurementResponse]
 
   implicit def withingResponseReads[T](implicit bodyReads: Reads[T]): Reads[WithingsResponse[T]] = Json.reads[WithingsResponse[T]]
