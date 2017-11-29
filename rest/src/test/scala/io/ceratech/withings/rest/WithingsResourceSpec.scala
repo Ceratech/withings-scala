@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.HttpEntity
 import akka.http.scaladsl.model.StatusCodes.{OK, Unauthorized}
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.github.scribejava.core.exceptions.OAuthException
@@ -119,17 +120,15 @@ class WithingsResourceSpec extends WordSpec
 
         val body =
           s"""{
-             |  "token": "${accessToken.token}",
-             |  "tokenSecret": "${accessToken.tokenSecret}",
-             |  "parameters": {
-             |    "userId": $userId,
-             |    "callback": "$callback",
-             |    "comment": "$comment",
-             |    "application": $application
-             |  }
+             |  "userId": $userId,
+             |  "callback": "$callback",
+             |  "comment": "$comment",
+             |  "application": $application
              |}""".stripMargin
 
-        Post("/calls/registerNotification", HttpEntity(`application/json`, body)) ~> resource.routes ~> check {
+        val request = Post("/calls/registerNotification", HttpEntity(`application/json`, body))
+          .withHeaders(RawHeader("X-Api-Token", accessToken.token), RawHeader("X-Api-Secret", accessToken.tokenSecret))
+        request ~> resource.routes ~> check {
           status mustBe OK
         }
       }
@@ -153,16 +152,14 @@ class WithingsResourceSpec extends WordSpec
 
         val body =
           s"""{
-             |  "token": "${accessToken.token}",
-             |  "tokenSecret": "${accessToken.tokenSecret}",
-             |  "parameters": {
-             |    "userId": $userId,
-             |    "startDate": "${startDate.format(dateFormatter)}",
-             |    "endDate": "${endDate.format(dateFormatter)}"
-             |  }
+             |  "userId": $userId,
+             |  "startDate": "${startDate.format(dateFormatter)}",
+             |  "endDate": "${endDate.format(dateFormatter)}"
              |}""".stripMargin
 
-        Post("/calls/measurements", HttpEntity(`application/json`, body)) ~> resource.routes ~> check {
+        val request = Post("/calls/measurements", HttpEntity(`application/json`, body))
+          .withHeaders(RawHeader("X-Api-Token", accessToken.token), RawHeader("X-Api-Secret", accessToken.tokenSecret))
+        request ~> resource.routes ~> check {
           status mustBe OK
         }
       }

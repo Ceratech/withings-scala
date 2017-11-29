@@ -23,6 +23,9 @@ lazy val client = (project in file("client"))
     libraryDependencies ++= Seq(
       scalaLogging,
 
+      // For tagging model classes
+      "io.swagger" % "swagger-annotations" % "1.5.17" % Provided,
+
       // OAuth 1.0 client
       "com.github.scribejava" % "scribejava-core" % "5.0.0",
 
@@ -55,6 +58,7 @@ lazy val rest = (project in file("rest"))
       // Swagger
       "io.swagger" % "swagger-jaxrs" % "1.5.17",
       "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.11.1",
+      "org.webjars" % "swagger-ui" % "3.5.0",
 
       "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test
     ) ++ testStack

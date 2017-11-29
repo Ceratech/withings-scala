@@ -15,5 +15,5 @@ object WithingsApi extends DefaultApi10a {
   override def getRequestTokenEndpoint: String = "https://developer.health.nokia.com/account/request_token"
 
   override def getAuthorizationUrl(requestToken: OAuth1RequestToken): String =
-    s"https://developer.health.nokia.com/account/authorize?token=${requestToken.getToken}"
+    s"https://developer.health.nokia.com/account/authorize?oauth_token=${requestToken.getToken}"
 }

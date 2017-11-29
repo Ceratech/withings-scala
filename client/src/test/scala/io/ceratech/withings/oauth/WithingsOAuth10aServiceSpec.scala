@@ -34,6 +34,7 @@ class WithingsOAuth10aServiceSpec extends BaseTest {
         url must include("oauth_signature_method")
         url must include("oauth_timestamp")
         url must include("oauth_version")
+        url must include("oauth_token")
       }
 
     }

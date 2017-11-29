@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.github.scribejava.core.model.OAuth1RequestToken
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.ceratech.withings.model.MeasurementGrp
+import io.ceratech.withings.model.MeasurementGroup
 import io.ceratech.withings.rest.model._
 import io.ceratech.withings.{WithingsAccessToken, WithingsClient}
 import io.swagger.annotations._
@@ -24,7 +24,7 @@ import scala.concurrent.ExecutionContext
 class WithingsResource(client: WithingsClient)(implicit executionContext: ExecutionContext)
   extends RestJsonMapping
     with PlayJsonSupport
-    with ErrorHandler {
+    with CustomDirectives {
 
   lazy val routes: Route = handleExceptions(oAuthExceptionHandler) { auth ~ calls }
 
@@ -70,22 +70,24 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
 
   private lazy val calls: Route =
     pathPrefix("calls") {
-      registerNotification ~ measurements
+      extractTokens { tokens ⇒
+        implicit val accessTokens: WithingsAccessToken = tokens
+        registerNotification ~ measurements
+      }
     }
 
   @Path("calls/registerNotification")
   @ApiOperation(value = "Register a notification when a certain event hapens on the Withings API", nickname = "registerNotification", httpMethod = "POST")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "body", value = "parameters required for the notification call", required = true,
-      dataTypeClass = classOf[RegisterNotificationParameters], paramType = "body")
+      dataTypeClass = classOf[RegisterNotificationParameters], paramType = "body"),
+    new ApiImplicitParam(name = "X-Api-Token", value = "API token for the Withings API", paramType = "header", dataType = "string"),
+    new ApiImplicitParam(name = "X-Api-Secret", value = "API secret for the Withings API", paramType = "header", dataType = "string")
   ))
-  def registerNotification: Route = {
+  def registerNotification(implicit @ApiParam(hidden = true) accessToken: WithingsAccessToken): Route = {
     path("registerNotification") {
       post {
-        entity(as[WithingsClientRequest[RegisterNotificationParameters]]) { body ⇒
-          implicit val accessToken: WithingsAccessToken = WithingsAccessToken(body.token, body.tokenSecret)
-
-          val parameters = body.parameters
+        entity(as[RegisterNotificationParameters]) { parameters ⇒
           onSuccess(client.registerNotification(parameters.userId, parameters.callback, parameters.comment, parameters.application)) {
             complete(OK)
           }
@@ -95,18 +97,17 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
   }
 
   @Path("calls/measurements")
-  @ApiOperation(value = "Get users measurements in a certain timeframe", nickname = "measurements", httpMethod = "POST", response = classOf[MeasurementGrp], responseContainer = "list")
+  @ApiOperation(value = "Get users measurements in a certain timeframe", nickname = "measurements", httpMethod = "POST", response = classOf[MeasurementGroup], responseContainer = "list")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "body", value = "parameters required for the measurements call", required = true,
-      dataTypeClass = classOf[MeasurementsParameters], paramType = "body")
+      dataTypeClass = classOf[MeasurementsParameters], paramType = "body"),
+    new ApiImplicitParam(name = "X-Api-Token", value = "API token for the Withings API", paramType = "header", dataType = "string"),
+    new ApiImplicitParam(name = "X-Api-Secret", value = "API secret for the Withings API", paramType = "header", dataType = "string")
   ))
-  def measurements: Route = {
+  def measurements(implicit @ApiParam(hidden = true) accessToken: WithingsAccessToken): Route = {
     path("measurements") {
       post {
-        entity(as[WithingsClientRequest[MeasurementsParameters]]) { body ⇒
-          implicit val accessToken: WithingsAccessToken = WithingsAccessToken(body.token, body.tokenSecret)
-
-          val parameters = body.parameters
+        entity(as[MeasurementsParameters]) { parameters ⇒
           onSuccess(client.getMeasurements(parameters.userId, parameters.startDate, parameters.endDate)) { measurements ⇒
             complete(measurements)
           }
