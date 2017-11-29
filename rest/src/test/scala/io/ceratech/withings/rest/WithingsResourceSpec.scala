@@ -5,8 +5,10 @@ import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.HttpEntity
-import akka.http.scaladsl.model.StatusCodes.OK
+import akka.http.scaladsl.model.StatusCodes.{OK, Unauthorized}
+import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import com.github.scribejava.core.exceptions.OAuthException
 import com.github.scribejava.core.model.OAuth1RequestToken
 import io.ceratech.withings.model.{Measurement, MeasurementGroup}
 import io.ceratech.withings.rest.model.RestJsonMapping
@@ -74,6 +76,29 @@ class WithingsResourceSpec extends WordSpec
           val content = responseAs[String]
           content must include("token")
           content must include("tokenSecret")
+        }
+      }
+
+      "give an error response when the access token call fails" in {
+        val client = mock[WithingsClient]
+        val resource = new WithingsResource(client)
+
+        val tempToken = new OAuth1RequestToken("temp-token", "temp-secret")
+        val verifier = "verifier_code"
+        val exception = new OAuthException("Test exception")
+
+        when(client.requestAccessToken(tempToken, verifier)) thenReturn Future.failed(exception)
+
+        val body =
+          s"""{
+             |  "tempToken": "${tempToken.getToken}",
+             |  "tempTokenSecret": "${tempToken.getTokenSecret}",
+             |  "verifier": "$verifier"
+             |}""".stripMargin
+
+        Post("/auth/requestAccessToken", HttpEntity(`application/json`, body)) ~> Route.seal(resource.routes) ~> check {
+          status mustBe Unauthorized
+          responseAs[String] mustBe exception.getMessage
         }
       }
     }

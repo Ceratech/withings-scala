@@ -23,9 +23,10 @@ import scala.concurrent.ExecutionContext
 @Path("/")
 class WithingsResource(client: WithingsClient)(implicit executionContext: ExecutionContext)
   extends RestJsonMapping
-    with PlayJsonSupport {
+    with PlayJsonSupport
+    with ErrorHandler {
 
-  lazy val routes: Route = auth ~ calls
+  lazy val routes: Route = handleExceptions(oAuthExceptionHandler) { auth ~ calls }
 
   private lazy val auth: Route =
     pathPrefix("auth") {
