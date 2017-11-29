@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/Ceratech/withings-scala.svg?branch=master)](https://travis-ci.org/Ceratech/withings-scala)
 [![Coverage Status](https://coveralls.io/repos/github/Ceratech/withings-scala/badge.svg?branch=master)](https://coveralls.io/github/Ceratech/withings-scala?branch=master)
+[ ![Download](https://api.bintray.com/packages/ceratech/maven/withings-client/images/download.svg) ](https://bintray.com/ceratech/maven/withings-client/_latestVersion)
+
 
 This wrapper allows you to use the [Health API](https://developer.health.nokia.com/api/doc); it supports OAuth authentication, setting up notifications and querying measurements.
 
