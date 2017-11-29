@@ -21,6 +21,8 @@ lazy val client = (project in file("client"))
     name := "withings-client",
 
     libraryDependencies ++= Seq(
+      scalaLogging,
+
       // OAuth 1.0 client
       "com.github.scribejava" % "scribejava-core" % "5.0.0",
 
@@ -39,6 +41,8 @@ lazy val rest = (project in file("rest"))
     buildInfoPackage := "io.ceratech.withings",
 
     libraryDependencies ++= Seq(
+      scalaLogging,
+
       // Akka HTTP
       "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -52,7 +56,6 @@ lazy val rest = (project in file("rest"))
       "io.swagger" % "swagger-jaxrs" % "1.5.17",
       "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.11.1",
 
-      "org.slf4j" % "slf4j-simple" % "1.7.25",
       "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test
     ) ++ testStack
   )

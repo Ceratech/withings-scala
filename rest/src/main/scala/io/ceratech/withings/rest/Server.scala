@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
+import com.typesafe.scalalogging.LazyLogging
 import io.ceratech.withings.WithingsClient
 import io.ceratech.withings.rest.swagger.SwaggerDocService
 
@@ -15,7 +16,7 @@ import scala.util.Properties
   *
   * @author dries
   */
-object Server extends App {
+object Server extends App with LazyLogging {
   // Read needed properties to boot the server
   val port = Properties.envOrElse("PORT", "8080").toInt
   val apiKey = Properties.envOrElse("API_KEY", "<unkown>")
@@ -34,6 +35,8 @@ object Server extends App {
   // Setup routes and start server
   lazy val routes = withingsResource.routes ~ SwaggerDocService.routes
   val bindingFuture = Http().bindAndHandle(routes, "0.0.0.0", port)
+
+  logger.info(s"Server started on port $post")
 
   // Shutdown hook to stop server on JVM shutdown
   sys.addShutdownHook {

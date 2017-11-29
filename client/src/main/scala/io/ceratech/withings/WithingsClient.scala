@@ -3,6 +3,7 @@ package io.ceratech.withings
 import java.time.ZonedDateTime
 
 import com.github.scribejava.core.model.{OAuth1RequestToken, OAuthRequest, Verb}
+import com.typesafe.scalalogging.Logger
 import io.ceratech.withings.Implicits._
 import io.ceratech.withings.model.{JsonMapping, MeasurementGroup, MeasurementResponse, WithingsResponse}
 import io.ceratech.withings.oauth.WithingsOAuth10aService
@@ -18,8 +19,11 @@ class WithingsClient(service: WithingsOAuth10aService)
                     (implicit executionContext: ExecutionContext)
   extends JsonMapping {
 
+  private val logger = Logger[WithingsClient]
+
   private def fetchRequestToken: Future[OAuth1RequestToken] = {
     Future {
+      logger.debug("Fetching request token")
       blocking(service.getRequestToken)
     }
   }
@@ -29,6 +33,7 @@ class WithingsClient(service: WithingsOAuth10aService)
     */
   def fetchAuthorizationUrl: Future[(String, OAuth1RequestToken)] = {
     fetchRequestToken.map { requestToken ⇒
+      logger.debug("Fetching authorization token")
       (service.getAuthorizationUrl(requestToken), requestToken)
     }
   }
@@ -42,6 +47,7 @@ class WithingsClient(service: WithingsOAuth10aService)
     */
   def requestAccessToken(token: OAuth1RequestToken, verifier: String): Future[WithingsAccessToken] = {
     Future {
+      logger.debug(s"Requesting access token with parameters: temp-token: ${token.getToken}, temp-secret: ${token.getTokenSecret}, verifier: $verifier")
       blocking(service.getAccessToken(token, verifier))
     }.map(t ⇒ WithingsAccessToken(t.getToken, t.getTokenSecret))
   }
@@ -66,6 +72,7 @@ class WithingsClient(service: WithingsOAuth10aService)
     ))
     service.signRequest(accessToken.oauthAccessToken, request)
 
+    logger.debug(s"Calling register notification with parmeters: userId: $userId, callbackurl: $callback, comment: $comment, appli: $application")
     service.executeAsCompletable(request).map(_ ⇒ ())
   }
 
@@ -86,6 +93,7 @@ class WithingsClient(service: WithingsOAuth10aService)
     ))
     service.signRequest(accessToken.oauthAccessToken, request)
 
+    logger.debug(s"Calling measurements with parmeters: userId: $userId, startdate: ${startDate.toEpochSecond}, enddate: ${endDate.toEpochSecond}")
     service.executeAsJson[WithingsResponse[MeasurementResponse]](request).map {
       _.body.map(_.measuregrps).getOrElse(Nil)
     }
