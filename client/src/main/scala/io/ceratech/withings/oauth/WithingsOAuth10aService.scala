@@ -26,6 +26,21 @@ class WithingsOAuth10aService(config: OAuthConfig)(implicit executionContext: Ex
     request.getCompleteUrl
   }
 
+  /**
+    * Fetch the request token with a custom callback URL
+    *
+    * @param callbackUrl the callback URL to use
+    * @return a [[OAuth1AccessToken]]
+    */
+  def getRequestToken(callbackUrl: String): Future[OAuth1RequestToken] = {
+     val request = new OAuthRequest(getApi.getRequestTokenVerb, getApi.getRequestTokenEndpoint)
+    request.addOAuthParameter(OAuthConstants.CALLBACK, callbackUrl)
+    addOAuthParams(request, "")
+    appendSignature(request)
+
+    executeCall(request).map(response ⇒ getApi.getRequestTokenExtractor.extract(response))
+  }
+
   def executeAsCompletable(request: OAuthRequest): Future[Response] = {
     executeCall(request).map(checkResponse)
   }
@@ -67,11 +82,10 @@ object WithingsOAuth10aService {
     *
     * @param apiKey    the API key
     * @param apiSecret the API secret key
-    * @param callback  the callback URL
     * @return an [[WithingsOAuth10aService]] instance
     */
-  def apply(apiKey: String, apiSecret: String, callback: String)(implicit executionContext: ExecutionContext): WithingsOAuth10aService = {
-    val config = new OAuthConfig(apiKey, apiSecret, callback, null, null, null, null, null, null, null)
+  def apply(apiKey: String, apiSecret: String)(implicit executionContext: ExecutionContext): WithingsOAuth10aService = {
+    val config = new OAuthConfig(apiKey, apiSecret, null, null, null, null, null, null, null, null)
     new WithingsOAuth10aService(config)
   }
 }

@@ -21,10 +21,9 @@ object Server extends App with LazyLogging {
   val port = Properties.envOrElse("PORT", "8080").toInt
   val apiKey = Properties.envOrElse("API_KEY", "<unkown>")
   val apiSecret = Properties.envOrElse("API_SECRET", "<unkown>")
-  val callback = Properties.envOrElse("CALLBACK", "<unkown>")
 
   // Setup API client and REST resources
-  lazy val withingsClient = WithingsClient(apiKey, apiSecret, callback)
+  lazy val withingsClient = WithingsClient(apiKey, apiSecret)
   lazy val withingsResource = new WithingsResource(withingsClient)
 
   // Initialize Akka

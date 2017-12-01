@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.HttpEntity
-import akka.http.scaladsl.model.StatusCodes.{OK, Unauthorized}
+import akka.http.scaladsl.model.StatusCodes.{OK, Unauthorized, NotFound}
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -21,7 +21,7 @@ import org.scalatest.{MustMatchers, WordSpec}
 import scala.concurrent.Future
 
 /**
-  * Test the route resrouce
+  * Test the route resource
   *
   * @author dries
   */
@@ -36,11 +36,12 @@ class WithingsResourceSpec extends WordSpec
       "return URL and temporary tokens" in {
         val client = mock[WithingsClient]
         val resource = new WithingsResource(client)
+        val callback = "callback"
 
         val (url, token) = ("url", new OAuth1RequestToken("temp-token", "temp-secret"))
-        when(client.fetchAuthorizationUrl) thenReturn Future.successful((url, token))
+        when(client.fetchAuthorizationUrl(callback)) thenReturn Future.successful((url, token))
 
-        Get("/auth/authorizationUrl") ~> resource.routes ~> check {
+        Get(s"/auth/authorizationUrl?callback=$callback") ~> resource.routes ~> check {
           status mustBe OK
           contentType mustBe `application/json`
 
@@ -48,6 +49,15 @@ class WithingsResourceSpec extends WordSpec
           content must include("url")
           content must include("tempToken")
           content must include("tempTokenSecret")
+        }
+      }
+
+      "give a 404 if the callback parameter is missing" in {
+        val client = mock[WithingsClient]
+        val resource = new WithingsResource(client)
+
+        Get("/auth/authorizationUrl") ~> Route.seal(resource.routes) ~> check {
+          status mustBe NotFound
         }
       }
     }

@@ -35,10 +35,13 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
 
   @Path("auth/authorizationUrl")
   @ApiOperation(value = "Get Withings authorization URL", nickname = "authorizationUrl", httpMethod = "GET", response = classOf[AutorizationRequestResult])
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "callback", value = "The OAuth callback that will be called if the user authorizes your app", required = true, `type` = "string", paramType = "query")
+  ))
   def authorizationUrl: Route = {
     path("authorizationUrl") {
-      get {
-        val future = client.fetchAuthorizationUrl.map {
+      (get & parameter('callback)) { callback ⇒
+        val future = client.fetchAuthorizationUrl(callback).map {
           case (url, requestToken) ⇒ AutorizationRequestResult(url, requestToken.getToken, requestToken.getTokenSecret)
         }
 

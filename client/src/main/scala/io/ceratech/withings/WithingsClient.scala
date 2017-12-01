@@ -21,18 +21,19 @@ class WithingsClient(service: WithingsOAuth10aService)
 
   private val logger = Logger[WithingsClient]
 
-  private def fetchRequestToken: Future[OAuth1RequestToken] = {
-    Future {
-      logger.debug("Fetching request token")
-      blocking(service.getRequestToken)
-    }
+  private def fetchRequestToken(callbackUrl: String): Future[OAuth1RequestToken] = {
+    logger.debug("Fetching request token")
+    service.getRequestToken(callbackUrl)
   }
 
   /**
+    * Fetches an temp token and the authorization URL to suply to the user
+    *
+    * @param callbackUrl the supplied callback to where the API will redirect the user with the verifier code
     * @return the URL to redirect the user to authorize the application and the original request token
     */
-  def fetchAuthorizationUrl: Future[(String, OAuth1RequestToken)] = {
-    fetchRequestToken.map { requestToken ⇒
+  def fetchAuthorizationUrl(callbackUrl: String): Future[(String, OAuth1RequestToken)] = {
+    fetchRequestToken(callbackUrl).map { requestToken ⇒
       logger.debug("Fetching authorization token")
       (service.getAuthorizationUrl(requestToken), requestToken)
     }
@@ -115,11 +116,10 @@ object WithingsClient {
     *
     * @param apiKey           the API key to use
     * @param apiSecret        the API secret to use
-    * @param callback         the callback URL to call when the authorization step succeeds
     * @param executionContext the context to run async tasks on
     * @return a [[WithingsClient]]
     */
-  def apply(apiKey: String, apiSecret: String, callback: String)(implicit executionContext: ExecutionContext): WithingsClient = {
-    new WithingsClient(WithingsOAuth10aService(apiKey, apiSecret, callback))
+  def apply(apiKey: String, apiSecret: String)(implicit executionContext: ExecutionContext): WithingsClient = {
+    new WithingsClient(WithingsOAuth10aService(apiKey, apiSecret))
   }
 }

@@ -32,7 +32,6 @@ Start the server (`io.ceratech.withings.rest`), and provide the following enviro
 
 1. `API_KEY` the Withings API key
 2. `API_SECRET` the Withings API secret
-3. `CALLBACK` the callback URL the user will land on after authorizing your application
 4. optional `PORT` the REST server port (defaults to `8080`)
 
 After starting open the following URL [localhost:8080/api-docs/swagger.json](localhost:8080/api-docs/swagger.json) to view the API docs (load them in a Swagger Editor/UI).

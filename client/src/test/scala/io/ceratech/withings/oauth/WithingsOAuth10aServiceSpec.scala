@@ -36,7 +36,27 @@ class WithingsOAuth10aServiceSpec extends BaseTest {
         url must include("oauth_version")
         url must include("oauth_token")
       }
+    }
 
+    "getRequestToken" should {
+      "execute a requestToken call and return the temp tokens" in {
+        val client = mock[HttpClient]
+        val service = new WithingsOAuth10aService(constructConfig(client))
+
+        val callback = "callback"
+        val (tempToken, tempTokenSecret) = ("temp_token", "temp_token_secret")
+
+        val response = new Response(200, "", new util.HashMap[String, String](),
+          s"""oauth_token=$tempToken&
+            |oauth_token_secret=$tempTokenSecret""".stripMargin)
+
+        when(client.execute(any[String], any[java.util.Map[String, String]], asEq(Verb.POST), any[String], any[Array[Byte]])) thenReturn response
+
+        service.getRequestToken(callback).map { tempTokens ⇒
+          tempTokens.getToken mustBe tempToken
+          tempTokens.getTokenSecret mustBe tempTokenSecret
+        }
+      }
     }
 
     "executeAsCompletable" should {
@@ -101,7 +121,7 @@ class WithingsOAuth10aServiceSpec extends BaseTest {
 
     "the companion object" should {
       "create a service with defaults" in {
-        val service = WithingsOAuth10aService("key", "secret", "callback")
+        val service = WithingsOAuth10aService("key", "secret")
         service.getConfig.getHttpClient mustBe null
       }
     }

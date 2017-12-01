@@ -3,13 +3,11 @@ package io.ceratech.withings
 import java.time.{ZoneId, ZonedDateTime}
 import java.util
 
-import com.github.scribejava.core.httpclient.HttpClient
 import com.github.scribejava.core.model.{OAuth1AccessToken, OAuth1RequestToken, OAuthRequest, Response}
-import io.ceratech.withings.helper.ConfigHelper.constructConfig
 import io.ceratech.withings.model._
 import io.ceratech.withings.oauth.WithingsOAuth10aService
-import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito._
 import play.api.libs.json.Reads
 
 import scala.concurrent.Future
@@ -29,11 +27,12 @@ class WithingsClientSpec extends BaseTest {
 
         val requestToken = new OAuth1RequestToken("request_token", "request_token_secret")
         val authUrl = "http://auth.url/"
+        val callback = "callback"
 
-        when(service.getRequestToken) thenReturn requestToken
+        when(service.getRequestToken(callback)) thenReturn Future.successful(requestToken)
         when(service.getAuthorizationUrl(requestToken)) thenReturn authUrl
 
-        client.fetchAuthorizationUrl.map {
+        client.fetchAuthorizationUrl(callback).map {
           case (url, token) ⇒
             token mustBe requestToken
             url mustBe authUrl
@@ -106,7 +105,7 @@ class WithingsClientSpec extends BaseTest {
 
     "the companion object" should {
       "create an initalized client" in {
-        val client = WithingsClient("key", "secret", "callback")
+        val client = WithingsClient("key", "secret")
         client must not be null
       }
     }
