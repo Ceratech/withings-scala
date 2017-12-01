@@ -35,7 +35,7 @@ object Server extends App with LazyLogging {
   lazy val routes = withingsResource.routes ~ SwaggerDocService.routes
   val bindingFuture = Http().bindAndHandle(routes, "0.0.0.0", port)
 
-  logger.info(s"Server started on port $post")
+  logger.info(s"Server started on port $port")
 
   // Shutdown hook to stop server on JVM shutdown
   sys.addShutdownHook {

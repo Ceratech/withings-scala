@@ -2,6 +2,7 @@ package io.ceratech.withings.oauth
 
 import com.github.scribejava.core.model._
 import com.github.scribejava.core.oauth.OAuth10aService
+import com.typesafe.scalalogging.LazyLogging
 import io.ceratech.withings.{WithingsApi, WithingsException}
 import play.api.libs.json._
 
@@ -12,7 +13,9 @@ import scala.collection.JavaConverters._
   *
   * @author dries
   */
-class WithingsOAuth10aService(config: OAuthConfig)(implicit executionContext: ExecutionContext) extends OAuth10aService(WithingsApi, config) {
+class WithingsOAuth10aService(config: OAuthConfig)(implicit executionContext: ExecutionContext)
+  extends OAuth10aService(WithingsApi, config)
+    with LazyLogging {
 
   override def getAuthorizationUrl(requestToken: OAuth1RequestToken): String = {
     val request = new OAuthRequest(Verb.GET, getApi.getAuthorizationUrl(requestToken))
@@ -62,6 +65,7 @@ class WithingsOAuth10aService(config: OAuthConfig)(implicit executionContext: Ex
 
   private def executeCall(request: OAuthRequest): Future[Response] = {
     Future {
+      logger.debug(request.getCompleteUrl)
       blocking(execute(request))
     }
   }

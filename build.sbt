@@ -60,6 +60,7 @@ lazy val rest = (project in file("rest"))
       "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.11.1",
       "org.webjars" % "swagger-ui" % "3.5.0",
 
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
+      "ch.qos.logback" % "logback-classic" % "1.2.3" % Runtime
     ) ++ testStack
   )

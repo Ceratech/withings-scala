@@ -1,6 +1,6 @@
 package io.ceratech.withings
 
-import com.github.scribejava.core.builder.api.DefaultApi10a
+import com.github.scribejava.core.builder.api.{DefaultApi10a, OAuth1SignatureType}
 import com.github.scribejava.core.model.OAuth1RequestToken
 
 /**
@@ -16,4 +16,6 @@ object WithingsApi extends DefaultApi10a {
 
   override def getAuthorizationUrl(requestToken: OAuth1RequestToken): String =
     s"https://developer.health.nokia.com/account/authorize?oauth_token=${requestToken.getToken}"
+
+  override def getSignatureType = OAuth1SignatureType.QueryString
 }

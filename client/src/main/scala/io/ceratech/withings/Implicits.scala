@@ -16,6 +16,12 @@ object Implicits {
         case (key, value) ⇒ request.addBodyParameter(key, value)
       }
     }
+
+    def addQueryParameters(parameters: Map[String, Any]): Unit = {
+      parameters.mapValues(_.toString).foreach {
+        case (key, value) ⇒ request.addQuerystringParameter(key, value)
+      }
+    }
   }
 
   implicit def pimpOAuthRequest(request: OAuthRequest): PimpedOAuthRequest = new PimpedOAuthRequest(request)
