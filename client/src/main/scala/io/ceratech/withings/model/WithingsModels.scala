@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 /**
   * Base response wrapper, contains status and optional results
   */
-case class WithingsResponse[T](status: Int, body: Option[T])
+case class WithingsResponse[T](status: Int, body: Option[T], error: Option[String])
 
 /**
   * Response details for measurements call

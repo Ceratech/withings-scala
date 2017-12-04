@@ -1,12 +1,12 @@
 package io.ceratech.withings.rest
 
 import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.StatusCodes.Unauthorized
+import akka.http.scaladsl.model.StatusCodes.{Unauthorized, BadRequest}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive, ExceptionHandler}
 import com.github.scribejava.core.exceptions.OAuthException
 import com.typesafe.scalalogging.LazyLogging
-import io.ceratech.withings.WithingsAccessToken
+import io.ceratech.withings.{WithingsAccessToken, WithingsException}
 
 /**
   * Error handler for the REST API
@@ -23,6 +23,11 @@ trait CustomDirectives extends LazyLogging {
       extractUri { uri =>
         logger.error(s"Error executing call to $uri", ex.getMessage)
         complete(HttpResponse(Unauthorized, entity = ex.getMessage))
+      }
+    case WithingsException(msg) ⇒
+      extractUri { uri =>
+        logger.error(s"Error executing call to $uri", msg)
+        complete(HttpResponse(BadRequest, entity = msg))
       }
   }
 

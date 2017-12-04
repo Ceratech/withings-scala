@@ -92,13 +92,27 @@ class WithingsClientSpec extends BaseTest {
         val group = MeasurementGroup(1L, 2, date, 2, measurement :: Nil)
         val response = MeasurementResponse(timezone, grp :: Nil)
 
-        when(service.executeAsJson(any[OAuthRequest])(any[Reads[WithingsResponse[MeasurementResponse]]])) thenReturn Future.successful(WithingsResponse(200, Some(response)))
+        when(service.executeAsJson(any[OAuthRequest])(any[Reads[WithingsResponse[MeasurementResponse]]])) thenReturn Future.successful(WithingsResponse(0, Some(response), None))
 
         client.getMeasurements(userId, start, stop).map { list ⇒
           verify(service).signRequest(any[OAuth1AccessToken], any[OAuthRequest])
 
           list must have length 1
           list must contain(group)
+        }
+      }
+
+      "propagate any API error" in {
+        val service = mock[WithingsOAuth10aService]
+        val client = new WithingsClient(service)
+
+        implicit val withingsAccessToken: WithingsAccessToken = WithingsAccessToken("token", "secret")
+
+        val response = MeasurementResponse("Test", Nil)
+        when(service.executeAsJson(any[OAuthRequest])(any[Reads[WithingsResponse[MeasurementResponse]]])) thenReturn Future.successful(WithingsResponse(503, Some(response), Some("Invalid params")))
+
+        recoverToSucceededIf[WithingsException] {
+          client.getMeasurements(1, ZonedDateTime.now(), ZonedDateTime.now())
         }
       }
     }

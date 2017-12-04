@@ -101,8 +101,11 @@ class WithingsClient(service: WithingsOAuth10aService)
     }
 
     logger.debug(s"Calling measurements with parmeters: userId: $userId, startdate: ${startDate.toEpochSecond}, enddate: ${endDate.toEpochSecond}")
-    service.executeAsJson[WithingsResponse[MeasurementResponse]](request).map {
-      _.body.map { res ⇒
+    service.executeAsJson[WithingsResponse[MeasurementResponse]](request).map { response ⇒
+      if (response.status != 0) {
+        throw WithingsException(s"API error: code: ${response.status}, message: ${response.error.getOrElse("<no message>")}")
+      }
+      response.body.map { res ⇒
         val zone = ZoneId.of(res.timezone)
         res.measuregrps.map(mapGrpToGroup(_, zone))
       }.getOrElse(Nil)

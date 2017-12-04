@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.HttpEntity
-import akka.http.scaladsl.model.StatusCodes.{OK, Unauthorized, NotFound}
+import akka.http.scaladsl.model.StatusCodes.{BadRequest, NotFound, OK, Unauthorized}
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -13,7 +13,7 @@ import com.github.scribejava.core.exceptions.OAuthException
 import com.github.scribejava.core.model.OAuth1RequestToken
 import io.ceratech.withings.model.{Measurement, MeasurementGroup}
 import io.ceratech.withings.rest.model.RestJsonMapping
-import io.ceratech.withings.{WithingsAccessToken, WithingsClient}
+import io.ceratech.withings.{WithingsAccessToken, WithingsClient, WithingsException}
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{MustMatchers, WordSpec}
@@ -171,6 +171,36 @@ class WithingsResourceSpec extends WordSpec
           .withHeaders(RawHeader("X-Api-Token", accessToken.token), RawHeader("X-Api-Secret", accessToken.tokenSecret))
         request ~> resource.routes ~> check {
           status mustBe OK
+        }
+      }
+
+      "give an error response if the API call fails" in {
+        val client = mock[WithingsClient]
+        val resource = new WithingsResource(client)
+
+        val dateFormatter = DateTimeFormatter.ISO_DATE_TIME
+
+        val userId = 1L
+        val startDate = ZonedDateTime.now().minusDays(5)
+        val endDate = ZonedDateTime.now().plusDays(5)
+
+        val accessToken = WithingsAccessToken("token", "secret")
+
+        val exception = WithingsException("Error")
+        when(client.getMeasurements(userId, startDate, endDate)(accessToken)) thenReturn Future.failed(exception)
+
+        val body =
+          s"""{
+             |  "userId": $userId,
+             |  "startDate": "${startDate.format(dateFormatter)}",
+             |  "endDate": "${endDate.format(dateFormatter)}"
+             |}""".stripMargin
+
+        val request = Post("/calls/measurements", HttpEntity(`application/json`, body))
+          .withHeaders(RawHeader("X-Api-Token", accessToken.token), RawHeader("X-Api-Secret", accessToken.tokenSecret))
+        request ~> Route.seal(resource.routes) ~> check {
+          status mustBe BadRequest
+          responseAs[String] mustBe exception.getMessage
         }
       }
     }

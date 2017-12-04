@@ -13,7 +13,7 @@ It makes use of the [ScribeJava](https://github.com/scribejava/scribejava) OAuth
 
 ### Client only
 
-Construct a `WithingsClient` using it's companion object. Provide the API key and secret an your callback URL for the authorization step.
+Construct a `WithingsClient` using it's companion object. Provide the API key and secret.
 
 To run authorize:
 
