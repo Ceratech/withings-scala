@@ -86,7 +86,7 @@ class WithingsClient(service: WithingsOAuth10aService)
     * @return all measurements within the given time period
     */
   def getMeasurements(userId: Long, startDate: ZonedDateTime, endDate: ZonedDateTime)(implicit accessToken: WithingsAccessToken): Future[Seq[MeasurementGroup]] = {
-    val request = new OAuthRequest(Verb.GET, "https://api.health.nokia.com/v2/measure")
+    val request = new OAuthRequest(Verb.GET, "https://api.health.nokia.com/measure")
     request.addQueryParameters(Map(
       "action" → "getmeas",
       "userid" → userId,
