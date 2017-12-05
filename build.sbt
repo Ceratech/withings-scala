@@ -1,4 +1,5 @@
 import Dependencies._
+import sbt.util
 
 enablePlugins(GitVersioning)
 
@@ -13,7 +14,9 @@ lazy val commonSettings = Seq(
   git.baseVersion := "0.1",
 
   bintrayOrganization := Some("ceratech"),
-  licenses += ("Apache-2.0", url("http://apache.org/licenses/LICENSE-2.0"))
+  licenses += ("Apache-2.0", url("http://apache.org/licenses/LICENSE-2.0")),
+
+  logLevel := util.Level.Debug
 )
 
 lazy val client = (project in file("client"))
