@@ -5,4 +5,4 @@ package io.ceratech.withings.rest.model
   *
   * @author dries
   */
-case class AutorizationRequestResult(url: String, tempToken: String, tempTokenSecret: String)
+case class AuthorizationRequestResult(url: String, tempToken: String, tempTokenSecret: String)

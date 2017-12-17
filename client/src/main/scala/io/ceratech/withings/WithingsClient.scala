@@ -102,13 +102,46 @@ class WithingsClient(service: WithingsOAuth10aService)
 
     logger.debug(s"Calling measurements with parmeters: userId: $userId, startdate: ${startDate.toEpochSecond}, enddate: ${endDate.toEpochSecond}")
     service.executeAsJson[WithingsResponse[MeasurementResponse]](request).map { response ⇒
-      if (response.status != 0) {
-        throw WithingsException(s"API error: code: ${response.status}, message: ${response.error.getOrElse("<no message>")}")
-      }
+      checkResponseCode(response)
+
       response.body.map { res ⇒
         val zone = ZoneId.of(res.timezone)
         res.measuregrps.map(mapGrpToGroup(_, zone))
       }.getOrElse(Nil)
+    }
+  }
+
+  /**
+    * Feteches the registered notifications (callbacks) from the API
+    *
+    * @param userId      for this user
+    * @param accessToken using these API access tokens
+    * @return the found registered notifications
+    */
+  def getRegisteredNotifications(userId: Long)(implicit accessToken: WithingsAccessToken): Future[Seq[RegisteredNotification]] = {
+    val request = new OAuthRequest(Verb.GET, "https://api.health.nokia.com/notify")
+    request.addQueryParameters(Map(
+      "action" → "list",
+      "userid" → userId
+    ))
+    service.signRequest(accessToken.oauthAccessToken, request)
+
+    service.executeAsJson[WithingsResponse[NotificationProfiles]](request).map { response ⇒
+      checkResponseCode(response)
+
+      def mapProfileToRegistered(profile: NotificationProfile): RegisteredNotification = {
+        RegisteredNotification(ZonedDateTime.ofInstant(Instant.ofEpochSecond(profile.expires), ZoneId.systemDefault()), profile.comment)
+      }
+
+      response.body.map { list ⇒
+        list.profiles.map(mapProfileToRegistered)
+      }.getOrElse(Nil)
+    }
+  }
+
+  private def checkResponseCode(response: WithingsResponse[_]) = {
+    if (response.status != 0) {
+      throw WithingsException(s"API error: code: ${response.status}, message: ${response.error.getOrElse("<no message>")}")
     }
   }
 }

@@ -34,7 +34,7 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
     }
 
   @Path("auth/authorizationUrl")
-  @ApiOperation(value = "Get Withings authorization URL", nickname = "authorizationUrl", httpMethod = "GET", response = classOf[AutorizationRequestResult])
+  @ApiOperation(value = "Get Withings authorization URL", nickname = "authorizationUrl", httpMethod = "GET", response = classOf[AuthorizationRequestResult])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "callback", value = "The OAuth callback that will be called if the user authorizes your app", required = true, `type` = "string", paramType = "query")
   ))
@@ -42,7 +42,7 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
     path("authorizationUrl") {
       (get & parameter('callback)) { callback ⇒
         val future = client.fetchAuthorizationUrl(callback).map {
-          case (url, requestToken) ⇒ AutorizationRequestResult(url, requestToken.getToken, requestToken.getTokenSecret)
+          case (url, requestToken) ⇒ AuthorizationRequestResult(url, requestToken.getToken, requestToken.getTokenSecret)
         }
 
         onSuccess(future) {
@@ -75,7 +75,7 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
     pathPrefix("calls") {
       extractTokens { tokens ⇒
         implicit val accessTokens: WithingsAccessToken = tokens
-        registerNotification ~ measurements
+        registerNotification ~ measurements ~ registeredNotifications
       }
     }
 
@@ -114,6 +114,23 @@ class WithingsResource(client: WithingsClient)(implicit executionContext: Execut
           onSuccess(client.getMeasurements(parameters.userId, parameters.startDate, parameters.endDate)) { measurements ⇒
             complete(measurements)
           }
+        }
+      }
+    }
+  }
+
+  @Path("calls/registeredNotifications")
+  @ApiOperation(value = "Get regsitered notifications for the provided userid", nickname = "measurements", httpMethod = "POST", response = classOf[MeasurementGroup], responseContainer = "list")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "userId", value = "The user to fetch the registered notifications for", required = true, `type` = "long", paramType = "query"),
+    new ApiImplicitParam(name = "X-Api-Token", value = "API token for the Withings API", paramType = "header", dataType = "string"),
+    new ApiImplicitParam(name = "X-Api-Secret", value = "API secret for the Withings API", paramType = "header", dataType = "string")
+  ))
+  def registeredNotifications(implicit @ApiParam(hidden = true) accessToken: WithingsAccessToken): Route = {
+    path("registeredNotifications") {
+      (get & parameter('userId.as[Long])) { userId ⇒
+        onSuccess(client.getRegisteredNotifications(userId)) { notifications ⇒
+          complete(notifications)
         }
       }
     }

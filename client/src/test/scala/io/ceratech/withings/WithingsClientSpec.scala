@@ -117,6 +117,24 @@ class WithingsClientSpec extends BaseTest {
       }
     }
 
+    "getRegisteredNotifications" should {
+      "correctly fetch and convert registered notifications" in {
+        val service = mock[WithingsOAuth10aService]
+        val client = new WithingsClient(service)
+
+        implicit val withingsAccessToken: WithingsAccessToken = WithingsAccessToken("token", "secret")
+
+        val userId = 1L
+        val response = NotificationProfiles(NotificationProfile(ZonedDateTime.now().toEpochSecond, "comment") :: Nil)
+
+        when(service.executeAsJson(any[OAuthRequest])(any[Reads[WithingsResponse[NotificationProfiles]]])) thenReturn Future.successful(WithingsResponse(0, Some(response), None))
+
+        client.getRegisteredNotifications(userId).map { list ⇒
+          list must have length 1
+        }
+      }
+    }
+
     "the companion object" should {
       "create an initalized client" in {
         val client = WithingsClient("key", "secret")

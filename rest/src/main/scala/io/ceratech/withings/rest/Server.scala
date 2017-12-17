@@ -51,7 +51,3 @@ trait Server extends LazyLogging {
     ()
   }
 }
-
-object Server extends App with Server {
-  startServer()
-}

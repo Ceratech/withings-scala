@@ -27,11 +27,12 @@ case class MeasurementGrp(grpid: Long, attrib: Int, date: Long, category: Int, m
 
 /**
   * More user-friendly version of the [[MeasurementGrp]]
-  * @param groupId the group identifier
+  *
+  * @param groupId    the group identifier
   * @param attributed the way this was attributed to the user
-  * @param date the date of measuring
-  * @param category the
-  * @param measures the measures in the group
+  * @param date       the date of measuring
+  * @param category   the
+  * @param measures   the measures in the group
   */
 case class MeasurementGroup(groupId: Long, attributed: Int, date: ZonedDateTime, category: Int, measures: Seq[Measurement])
 
@@ -43,3 +44,26 @@ case class MeasurementGroup(groupId: Long, attributed: Int, date: ZonedDateTime,
   * @param `type` the type of measurement
   */
 case class Measurement(value: Int, unit: Int, `type`: Int)
+
+/**
+  * Result of the registered notifications call
+  *
+  * @param profiles the set of registered profiles
+  */
+case class NotificationProfiles(profiles: Seq[NotificationProfile])
+
+/**
+  * A registered notification
+  *
+  * @param expires when the registration expires
+  * @param comment the comment of the notification
+  */
+case class NotificationProfile(expires: Long, comment: String)
+
+/**
+  * A, readable, registered notification
+  *
+  * @param expires when this registration expires
+  * @param comment the initially registered comment with this notification
+  */
+case class RegisteredNotification(expires: ZonedDateTime, comment: String)

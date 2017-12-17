@@ -11,7 +11,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.github.scribejava.core.exceptions.OAuthException
 import com.github.scribejava.core.model.OAuth1RequestToken
-import io.ceratech.withings.model.{Measurement, MeasurementGroup}
+import io.ceratech.withings.model.{Measurement, MeasurementGroup, RegisteredNotification}
 import io.ceratech.withings.rest.model.RestJsonMapping
 import io.ceratech.withings.{WithingsAccessToken, WithingsClient, WithingsException}
 import org.mockito.Mockito._
@@ -201,6 +201,24 @@ class WithingsResourceSpec extends WordSpec
         request ~> Route.seal(resource.routes) ~> check {
           status mustBe BadRequest
           responseAs[String] mustBe exception.getMessage
+        }
+      }
+    }
+
+    "GET registeredNotifications" should {
+      "fetch the registered notifications" in {
+        val client = mock[WithingsClient]
+        val resource = new WithingsResource(client)
+
+        val userId = 1L
+        val accessToken = WithingsAccessToken("token", "secret")
+
+        when(client.getRegisteredNotifications(userId)(accessToken)) thenReturn Future.successful(RegisteredNotification(ZonedDateTime.now(), "comment") :: Nil)
+
+        val request = Get(s"/calls/registeredNotifications?userId=$userId")
+          .withHeaders(RawHeader("X-Api-Token", accessToken.token), RawHeader("X-Api-Secret", accessToken.tokenSecret))
+        request ~> resource.routes ~> check {
+          status mustBe OK
         }
       }
     }
